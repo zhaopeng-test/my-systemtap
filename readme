@@ -1,0 +1,40 @@
+0.介绍systemtap
+  systemtap 是一种非常有用的动态追踪技术，并且比较早期的内核版本也支持。
+  非常方便调试内核。
+  
+1. 安装 systemtap
+
+	需要安装对应内核版本
+	yum install kernel-devel-`uname -r`
+	yum install kernel-debuginfo-`uname -r`
+
+注意，debuginfo 一般都不能yum 注册，到对应网站手动下载安装
+
+   例：centos 7系统对应的rpm 
+   http://debuginfo.centos.org/7/x86_64/
+   
+   例：debuginfo 对应两个rpm
+   rpm -ivh kernel-debuginfo-3.10.0-123.el7.x86_64.rpm
+   rpm -ivh kernel-debuginfo-common-x86_64-3.10.0-123.el7.x86_64.rpm
+     
+   yum install -y systemtap
+
+2. 测试是否安装成功：
+   1）stap -e 'probe begin { printf("Hello World!\n") exit() }'
+   2）stap -l 'kernel.function("netif_receive_skb")'
+   
+3. 有用的网站
+   1）自带函数
+      https://sourceware.org/systemtap/tapsets/
+	  例：
+	  cpu() 获取cpu id
+	  pid() 获取当前进程pid
+	  
+	  探测进程切换
+	  probe::scheduler.ctxswitch — A context switch is occuring.
+	  
+   2）官网 自带使用示例
+      非常具有参考价值
+      https://sourceware.org/systemtap/examples/
+   
+   

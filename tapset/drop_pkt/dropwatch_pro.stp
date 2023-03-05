@@ -1,0 +1,108 @@
+#!/usr/bin/stap 
+%{
+#include <linux/kernel.h>
+#include <linux/net.h>
+#include <linux/textsearch.h>
+#include <net/checksum.h>
+#include <linux/dma-mapping.h>
+#include <linux/netdev_features.h>
+#include <linux/skbuff.h>
+#include <uapi/linux/ip.h>
+#include <uapi/linux/udp.h>
+#include <uapi/linux/tcp.h>
+
+#define NIPQUAD(addr) \
+((unsigned char *)&addr)[0], \
+((unsigned char *)&addr)[1], \
+((unsigned char *)&addr)[2], \
+((unsigned char *)&addr)[3]
+
+
+%}
+############################################################
+# An example script to mimic the behavior of the dropwatch utility
+# Uage: stap -g --all-modules dropwatch_pro.stp  6     
+############################################################
+function get_packet_info:string(skb:long)
+%{
+     int ret=-1;
+     unsigned int src_port = 0;
+     unsigned int dest_port = 0;
+     struct udphdr *udp_header;
+     struct tcphdr *tcp_header;
+     struct sk_buff *skb= (struct sk_buff *)STAP_ARG_skb;
+     struct iphdr *ip_header;
+     unsigned int src_ip=0,dest_ip=0;
+     int p = -1;
+
+     if(!skb)
+     {
+         goto EXIT_F;
+     }
+     ip_header = (struct iphdr *)skb_network_header(skb);
+     if(!ip_header)
+     {
+       goto EXIT_F;
+     }
+     if (ip_header->version != 4){
+       goto EXIT_F;
+     }
+
+
+     src_ip = (unsigned int)ip_header->saddr;
+     dest_ip = (unsigned int)ip_header->daddr;
+
+     if (ip_header->protocol==17) {
+            udp_header = (struct udphdr *)skb_transport_header(skb);
+            src_port = (unsigned int)ntohs(udp_header->source);
+            dest_port = (unsigned int)ntohs(udp_header->dest);
+        } else if (ip_header->protocol == 6) {
+            tcp_header = (struct tcphdr *)skb_transport_header(skb);
+            src_port = (unsigned int)ntohs(tcp_header->source);
+            dest_port = (unsigned int)ntohs(tcp_header->dest);
+        }
+        p = ip_header->protocol;
+    //printk(KERN_INFO "OUT packet info: src:%u.%u.%u.%u, src port: %u; dest:%u.%u.%u.%u, dest port: %u; proto: %u\n", NIPQUAD(ip_header->saddr), src_port, NIPQUAD(ip_header->daddr), dest_port, ip_header->protocol);
+
+EXIT_F:
+     snprintf(STAP_RETVALUE, MAXSTRINGLEN, "%d",p);
+%}
+# Array to hold the list of drop points we find
+//global locations
+# Note when we turn the monitor on and off
+probe begin { printf("Monitoring for dropped packets\n") }
+probe end { printf("Stopping dropped packet monitor\n") }
+# increment a drop counter for every location we drop at
+probe kernel.trace("kfree_skb") {
+  pro=get_packet_info($skb)
+  //printf("%s\r\n",Ip)
+  if(pro == @1)
+  {
+     printf("key is match!, arg %s \n", @1);
+     print_backtrace();
+     
+  }
+
+  //if(Ip==@1)
+  //{
+  //    printf("packets dropped at (%s)\n",
+  //          symname($location))
+      //print_backtrace();
+
+ //   locations[$location] <<< 1 //systemtap Statistical aggregate
+    //if(symname($location)=="nf_hook_slow")//dump the backtrace if kfree_skb called by nf_hook_slow function
+          //print_backtrace();
+// }
+}
+# Every 5 seconds report our drop locations
+//probe timer.sec(5)
+//{
+//  printf("\n=== %s ===\n", ctime(gettimeofday_s()))
+//  foreach ([l, b] in locations-) {
+//    printf("\n=== %s ===\n", ctime(gettimeofday_s()))
+//    printf("%d packets dropped at %x (%s)\n %s\n",
+//           @count(locations[l, b]), l, symname(l), b)
+//  }
+//  delete locations
+//}
+### mydropwatch.stp ends ###

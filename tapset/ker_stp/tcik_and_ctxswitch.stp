@@ -1,0 +1,22 @@
+
+probe kernel.function("account_process_tick").call
+{
+if (31 == cpu()){
+ printf("=======timer tick========\n");
+ printf("time:%ld, account_process_tick [cpu %d] : %p, task name %s, pid %d, tid %d, user_tick %d.\n",
+  gettimeofday_ns(), cpu(), pointer_arg(1), execname(), pid(), tid(), int_arg(2));
+ #print_backtrace();
+ printf("=======timer tick========\n");
+}
+}
+
+probe scheduler.ctxswitch
+{
+ if (31 == cpu()){
+ printf("time:%ld, ctx switch [cpu %d] : task name %s, pid %d, tid %d -> next task %s pid %d tid %d.\n",
+  gettimeofday_ns(), cpu(), prev_task_name, pid(), tid(), next_task_name, next_pid, next_tid);
+ #print_backtrace();
+ }
+}
+
+

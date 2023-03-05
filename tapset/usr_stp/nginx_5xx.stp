@@ -1,0 +1,9 @@
+probe process("/usr/local/nginx/sbin/nginx").function("ngx_http_finalize_request").call{
+	//if ($rc >= 500){
+		printf("rc : %d\n", $rc)
+		print_ubacktrace()
+        //}
+
+}
+
+

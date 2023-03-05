@@ -1,0 +1,6 @@
+
+probe kernel.function("sys_open").call
+{
+	printf("filename : %s\n",
+                user_string_quoted(pointer_arg(1)));
+}

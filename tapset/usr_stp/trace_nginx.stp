@@ -1,0 +1,12 @@
+probe process("/usr/local/nginx/sbin/nginx").function("*@src/http/ngx_http_*").call
+{
+     printf("%s -> %s\n", thread_indent(4), ppfunc());
+}
+
+probe process("/usr/local/nginx/sbin/nginx").function("*@src/http/ngx_http_*").call
+{
+     printf("%s <- %s\n", thread_indent(-4), ppfunc());
+}
+
+
+

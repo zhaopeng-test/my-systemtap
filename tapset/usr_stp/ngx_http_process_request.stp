@@ -1,0 +1,8 @@
+probe process("/usr/local/nginx/sbin/nginx").statement("ngx_http_process_request@src/http/ngx_http_request.c:*"){
+	printf("%s\n", pp())
+
+}
+
+
+
+

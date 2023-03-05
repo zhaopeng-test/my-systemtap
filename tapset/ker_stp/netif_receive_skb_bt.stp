@@ -1,0 +1,9 @@
+#stap -g --all-modules netif_receive_skb_bt.stp
+
+probe kernel.function("netif_receive_skb")
+{
+	printf("================\n");
+	print_backtrace();
+	printf("================\n");
+
+}

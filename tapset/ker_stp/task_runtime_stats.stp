@@ -1,0 +1,44 @@
+global task_tick, qua_tick, idle_tick
+global task_runtime, idle_runtime, last_time, pid_name
+
+probe kernel.function("account_process_tick").call
+{
+if (31 == cpu()){
+  task_tick[pid()] += 1;
+  #printf("=======timer tick========\n");
+  #printf("time:%ld, account_process_tick [cpu %d] : %p, task name %s, pid %d, tid %d, user_tick %d.\n",
+  #gettimeofday_ns(), cpu(), pointer_arg(1), execname(), pid(), tid(), int_arg(2));
+  #print_backtrace();
+  #printf("=======timer tick========\n");
+}
+}
+
+probe scheduler.ctxswitch
+{
+ 
+ if (31 == cpu()){
+   if (0 == last_time){
+   	last_time = gettimeofday_ns();
+   }
+
+   task_runtime[pid()] += gettimeofday_ns() - last_time;
+   last_time = gettimeofday_ns();
+
+   #printf("time:%ld, ctx switch [cpu %d] : task name %s, pid %d, tid %d -> next task %s pid %d tid %d.\n",
+   #gettimeofday_ns(), cpu(), prev_task_name, pid(), tid(), next_task_name, next_pid, next_tid);
+   #print_backtrace();
+ }
+}
+
+probe end
+{
+	printf("=======probe end========\n");
+	printf("=======cpu31 pid runtime========\n");
+	foreach(pid+ in task_runtime){
+  		printf("pid %d, runtime %ld\n", pid, task_runtime[pid]);
+    	}
+	printf("=======cpu31 pid tick========\n");
+	foreach(pid+ in task_tick){
+  		printf("pid %d, tick %ld\n", pid, task_tick[pid]);
+    	}
+}

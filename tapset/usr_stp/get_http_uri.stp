@@ -1,0 +1,5 @@
+probe process("/usr/local/nginx/sbin/nginx").function("ngx_http_process_request").call{
+   printf("r->uri.len: %d, r->uri.data: %p\n", $r->uri->len, $r->uri->data)
+   printf("r->uri:%s\n r->uri(n): %s\n", user_string($r->uri->data),
+ 					 user_string_n($r->uri->data, $r->uri->len));
+}

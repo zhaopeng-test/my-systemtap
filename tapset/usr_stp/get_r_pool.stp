@@ -1,0 +1,5 @@
+probe process("/usr/local/nginx/sbin/nginx").function("ngx_http_process_request").call{
+	printf("$r->pool$: %s\n $r->pool$$: %s\n",
+		$r->pool$, $r->pool$$);
+
+}

@@ -1,0 +1,4 @@
+probe process("/usr/local/nginx/sbin/nginx").function("ngx_http_process_request_line").call{
+	printf("c->fd : %d\n", @cast($rev->data, "ngx_connection_t")->fd);
+
+}

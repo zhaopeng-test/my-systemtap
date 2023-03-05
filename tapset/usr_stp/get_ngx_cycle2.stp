@@ -1,0 +1,7 @@
+
+probe process("/usr/local/nginx/sbin/nginx").function("ngx_process_events_and_timers").call{
+	ngx_cycle=@var("ngx_cycle@src/core/ngx_cycle.c")
+	printf("ngx_cycle->connections: %d\n", $ngx_cycle->connections)
+	exit()
+}
+

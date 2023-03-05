@@ -1,0 +1,6 @@
+probe process("/usr/local/nginx/sbin/nginx").function("ngx_http_process_request_line").call{
+	c=&@cast($rev->data, "ngx_connection_t")
+	printf("c->read->handlers %s, c->write->handler: %s\n",
+        usymname(c->read->handler), usymname(c->write->handler));
+
+}

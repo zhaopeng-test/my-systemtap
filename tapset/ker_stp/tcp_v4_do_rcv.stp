@@ -1,0 +1,10 @@
+#stap -g --all-modules netif_receive_skb_bt.stp
+
+probe kernel.statement("tcp_v4_do_rcv@net/ipv4/tcp_ipv4.c:*")
+{
+	printf("================\n");
+        printf("%s\n", pp());
+	//print_backtrace();
+	printf("================\n");
+
+}

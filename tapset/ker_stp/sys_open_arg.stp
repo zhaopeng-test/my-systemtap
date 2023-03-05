@@ -1,0 +1,6 @@
+
+probe kernel.function("sys_open").call
+{
+	printf("filename : %p(%s), flags:%d, mode %x\n",
+               pointer_arg(1), kernel_string(pointer_arg(1)), int_arg(2), int_arg(3));
+}
